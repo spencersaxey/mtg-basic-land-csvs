@@ -8,23 +8,23 @@
 
 [sheets/all-paper-basics-by-appearance.csv](sheets/all-paper-basics-by-appearance.csv)
 
-### All Forests
+### All Basic Forests
 
 [sheets/all-paper-forests-by-appearance.csv](sheets/all-paper-forests-by-appearance.csv)
 
-### All Plains
+### All Basic Plains
 
 [sheets/all-paper-plains-by-appearance.csv](sheets/all-paper-plains-by-appearance.csv)
 
-### All Islands
+### All Basic Islands
 
 [sheets/all-paper-islands-by-appearance.csv](sheets/all-paper-islands-by-appearance.csv)
 
-### All Swamps
+### All Basic Swamps
 
 [sheets/all-paper-swamps-by-appearance.csv](sheets/all-paper-swamps-by-appearance.csv)
 
-### All Mountains
+### All Basic Mountains
 
 [sheets/all-paper-mountains-by-appearance.csv](sheets/all-paper-mountains-by-appearance.csv)
 
@@ -32,22 +32,22 @@
 
 [sheets/english-paper-basics-by-appearance.csv](sheets/english-paper-basics-by-appearance.csv)
 
-### English-only Forests
+### English-only Basic Forests
 
 [sheets/english-paper-forests-by-appearance.csv](sheets/english-paper-forests-by-appearance.csv)
 
-### English-only Plains
+### English-only Basic Plains
 
 [sheets/english-paper-plains-by-appearance.csv](sheets/english-paper-plains-by-appearance.csv)
 
-### English-only Islands
+### English-only Basic Islands
 
 [sheets/english-paper-islands-by-appearance.csv](sheets/english-paper-islands-by-appearance.csv)
 
-### English-only Swamps
+### English-only Basic Swamps
 
 [sheets/english-paper-swamps-by-appearance.csv](sheets/english-paper-swamps-by-appearance.csv)
 
-### English-only Mountains
+### English-only Basic Mountains
 
 [sheets/english-paper-mountains-by-appearance.csv](sheets/english-paper-mountains-by-appearance.csv)
