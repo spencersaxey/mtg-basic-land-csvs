@@ -2,7 +2,7 @@ name: Update MTG Basic Land Sheets
 
 on:
   schedule:
-    - cron: "23 7 * * *"
+    - cron: "0 0 * * *"
   workflow_dispatch:
 
 permissions:
@@ -33,5 +33,6 @@ jobs:
             echo "No changes to commit"
             exit 0
           fi
-          git commit -m "chore: update MTG basic land spreadsheets"
+          ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          git commit -m "chore: update MTG basic land spreadsheets (${ts})"
           git push
