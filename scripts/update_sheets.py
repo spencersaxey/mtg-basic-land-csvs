@@ -6,6 +6,7 @@ from __future__ import annotations
 import csv
 import datetime as dt
 import json
+import re
 import sys
 import time
 import urllib.parse
@@ -18,6 +19,7 @@ USER_AGENT = "mtg-basic-land-csvs-updater/1.0"
 DEFAULT_CUTOFF = dt.date.today()
 ROOT = Path(__file__).resolve().parent.parent
 SHEETS_DIR = ROOT / "sheets"
+README_PATH = ROOT / "README.md"
 
 COLUMNS = [
     "card",
@@ -189,8 +191,40 @@ def parse_cutoff(argv: List[str]) -> dt.date:
         raise SystemExit("Cutoff date must be YYYY-MM-DD") from exc
 
 
+def update_readme_timestamp(path: Path, timestamp_utc: str) -> bool:
+    if not path.exists():
+        return False
+
+    content = path.read_text(encoding="utf-8")
+    updated_line = f"Last updated @ {timestamp_utc} UTC"
+    pattern = re.compile(r"^Last updated @ .*?$", re.MULTILINE)
+
+    if pattern.search(content):
+        new_content = pattern.sub(updated_line, content)
+    else:
+        lines = content.splitlines()
+        if lines:
+            insert_at = 1
+            while insert_at < len(lines) and lines[insert_at] == "":
+                insert_at += 1
+            lines.insert(insert_at, updated_line)
+            if insert_at + 1 < len(lines) and lines[insert_at + 1] != "":
+                lines.insert(insert_at + 1, "")
+        else:
+            lines = [updated_line, ""]
+        new_content = "\n".join(lines)
+        if not new_content.endswith("\n"):
+            new_content += "\n"
+
+    if new_content != content:
+        path.write_text(new_content, encoding="utf-8")
+        return True
+    return False
+
+
 def main(argv: List[str]) -> int:
     cutoff = parse_cutoff(argv)
+    run_timestamp = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     SHEETS_DIR.mkdir(parents=True, exist_ok=True)
 
     print(f"Updating sheets with cutoff date: {cutoff.isoformat()}")
@@ -210,6 +244,12 @@ def main(argv: List[str]) -> int:
         else:
             fetched_msg += " from full history"
         print(f"- {filename}: {count} rows ({fetched_msg})")
+
+    readme_updated = update_readme_timestamp(README_PATH, run_timestamp)
+    if readme_updated:
+        print(f"- README.md timestamp updated: {run_timestamp}")
+    else:
+        print("- README.md not updated (missing file or no content change)")
 
     return 0
 

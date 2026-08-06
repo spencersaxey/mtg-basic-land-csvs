@@ -1,8 +1,10 @@
 # mtg-basic-land-csvs
 
+Last updated @ 2026-08-06T19:51:35Z UTC
+
 ## Spreadsheets for the MTG Basic Land collectors out there
 
-## The Following spreadsheets are updated daily:
+## The Following spreadsheets are updated daily when the observatory at Greenwich has its darkest hour (00:00):
 
 ### All Paper Basics
 
