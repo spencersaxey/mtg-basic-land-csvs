@@ -2,7 +2,7 @@ name: Update MTG Basic Land Sheets
 
 on:
   schedule:
-    - cron: "13 16 * * *"
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 permissions:
