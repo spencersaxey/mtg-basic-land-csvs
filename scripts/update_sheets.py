@@ -38,12 +38,14 @@ SHEETS: Dict[str, str] = {
     "all-paper-islands-by-appearance.csv": "t:basic t:island game:paper unique:prints",
     "all-paper-swamps-by-appearance.csv": "t:basic t:swamp game:paper unique:prints",
     "all-paper-mountains-by-appearance.csv": "t:basic t:mountain game:paper unique:prints",
+    "all-paper-wastes-by-appearance.csv": "t:basic !\"Wastes\" game:paper unique:prints",
     "english-paper-basics-by-appearance.csv": "t:basic game:paper lang:en unique:prints",
     "english-paper-forests-by-appearance.csv": "t:basic t:forest game:paper lang:en unique:prints",
     "english-paper-plains-by-appearance.csv": "t:basic t:plains game:paper lang:en unique:prints",
     "english-paper-islands-by-appearance.csv": "t:basic t:island game:paper lang:en unique:prints",
     "english-paper-swamps-by-appearance.csv": "t:basic t:swamp game:paper lang:en unique:prints",
     "english-paper-mountains-by-appearance.csv": "t:basic t:mountain game:paper lang:en unique:prints",
+    "english-paper-wastes-by-appearance.csv": "t:basic !\"Wastes\" game:paper lang:en unique:prints",
 }
 
 

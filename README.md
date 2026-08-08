@@ -1,6 +1,6 @@
 # mtg-basic-land-csvs
 
-Last updated @ 2026-08-07T18:29:47Z UTC
+Last updated @ 2026-08-08T05:58:57Z UTC
 
 ## Spreadsheets for the MTG Basic Land collectors out there. Updates daily- seven minutes after the observatory at Greenwich crosses its darkest hour (00:07):
 
@@ -28,6 +28,10 @@ Last updated @ 2026-08-07T18:29:47Z UTC
 
 [sheets/all-paper-mountains-by-appearance.csv](sheets/all-paper-mountains-by-appearance.csv)
 
+### All Basic Wastes
+
+[sheets/all-paper-wastes-by-appearance.csv](sheets/all-paper-wastes-by-appearance.csv)
+
 ### English-only Paper Basics
 
 [sheets/english-paper-basics-by-appearance.csv](sheets/english-paper-basics-by-appearance.csv)
@@ -51,3 +55,7 @@ Last updated @ 2026-08-07T18:29:47Z UTC
 ### English-only Basic Mountains
 
 [sheets/english-paper-mountains-by-appearance.csv](sheets/english-paper-mountains-by-appearance.csv)
+
+### English-only Basic Wastes
+
+[sheets/english-paper-wastes-by-appearance.csv](sheets/english-paper-wastes-by-appearance.csv)
