@@ -46,6 +46,20 @@ SHEETS: Dict[str, str] = {
     "english-paper-swamps-by-appearance.csv": "t:basic t:swamp game:paper lang:en unique:prints",
     "english-paper-mountains-by-appearance.csv": "t:basic t:mountain game:paper lang:en unique:prints",
     "english-paper-wastes-by-appearance.csv": "t:basic !\"Wastes\" game:paper lang:en unique:prints",
+    "all-paper-basics-no-secret-lairs-by-appearance.csv": "t:basic game:paper -set:sld -set:slp unique:prints",
+    "all-paper-forests-no-secret-lairs-by-appearance.csv": "t:basic t:forest game:paper -set:sld -set:slp unique:prints",
+    "all-paper-plains-no-secret-lairs-by-appearance.csv": "t:basic t:plains game:paper -set:sld -set:slp unique:prints",
+    "all-paper-islands-no-secret-lairs-by-appearance.csv": "t:basic t:island game:paper -set:sld -set:slp unique:prints",
+    "all-paper-swamps-no-secret-lairs-by-appearance.csv": "t:basic t:swamp game:paper -set:sld -set:slp unique:prints",
+    "all-paper-mountains-no-secret-lairs-by-appearance.csv": "t:basic t:mountain game:paper -set:sld -set:slp unique:prints",
+    "all-paper-wastes-no-secret-lairs-by-appearance.csv": "t:basic !\"Wastes\" game:paper -set:sld -set:slp unique:prints",
+    "english-paper-basics-no-secret-lairs-by-appearance.csv": "t:basic game:paper lang:en -set:sld -set:slp unique:prints",
+    "english-paper-forests-no-secret-lairs-by-appearance.csv": "t:basic t:forest game:paper lang:en -set:sld -set:slp unique:prints",
+    "english-paper-plains-no-secret-lairs-by-appearance.csv": "t:basic t:plains game:paper lang:en -set:sld -set:slp unique:prints",
+    "english-paper-islands-no-secret-lairs-by-appearance.csv": "t:basic t:island game:paper lang:en -set:sld -set:slp unique:prints",
+    "english-paper-swamps-no-secret-lairs-by-appearance.csv": "t:basic t:swamp game:paper lang:en -set:sld -set:slp unique:prints",
+    "english-paper-mountains-no-secret-lairs-by-appearance.csv": "t:basic t:mountain game:paper lang:en -set:sld -set:slp unique:prints",
+    "english-paper-wastes-no-secret-lairs-by-appearance.csv": "t:basic !\"Wastes\" game:paper lang:en -set:sld -set:slp unique:prints",
 }
 
 
@@ -184,6 +198,20 @@ def merge_rows(existing: Sequence[Dict[str, str]], incoming: Sequence[Dict[str, 
     return rows
 
 
+def count_new_rows(existing: Sequence[Dict[str, str]], incoming: Sequence[Dict[str, str]], cutoff: dt.date) -> int:
+    existing_keys = {
+        row_key(row)
+        for row in existing
+        if (date_from_row(row) is not None and date_from_row(row) <= cutoff)
+    }
+    incoming_keys = {
+        row_key(row)
+        for row in incoming
+        if (date_from_row(row) is not None and date_from_row(row) <= cutoff)
+    }
+    return len(incoming_keys - existing_keys)
+
+
 def parse_cutoff(argv: List[str]) -> dt.date:
     if len(argv) < 2:
         return DEFAULT_CUTOFF
@@ -233,19 +261,27 @@ def main(argv: List[str]) -> int:
     for filename, query in SHEETS.items():
         path = SHEETS_DIR / filename
         existing_rows = read_existing_rows(path)
+        existing_effective = merge_rows(existing_rows, [], cutoff)
         since_date = latest_release_date(existing_rows)
 
         cards = fetch_all_prints_since(query, since_date)
         incoming_rows = [row_from_card(c) for c in cards if within_cutoff(c, cutoff)]
         merged_rows = merge_rows(existing_rows, incoming_rows, cutoff)
+        new_rows = count_new_rows(existing_rows, incoming_rows, cutoff)
 
-        count = write_csv(path, merged_rows)
+        if merged_rows != existing_effective:
+            count = write_csv(path, merged_rows)
+            updated_msg = "updated"
+        else:
+            count = len(existing_effective)
+            updated_msg = "no changes"
+
         fetched_msg = f"fetched {len(incoming_rows)}"
         if since_date is not None:
             fetched_msg += f" since {since_date.isoformat()}"
         else:
             fetched_msg += " from full history"
-        print(f"- {filename}: {count} rows ({fetched_msg})")
+        print(f"- {filename}: {count} rows ({fetched_msg}; {new_rows} new; {updated_msg})")
 
     readme_updated = update_readme_timestamp(README_PATH, run_timestamp)
     if readme_updated:
