@@ -9,6 +9,7 @@ import json
 import re
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -20,6 +21,11 @@ DEFAULT_CUTOFF = dt.date.today()
 ROOT = Path(__file__).resolve().parent.parent
 SHEETS_DIR = ROOT / "sheets"
 README_PATH = ROOT / "README.md"
+REQUEST_TIMEOUT_SECONDS = 30
+MAX_RETRIES = 5
+INITIAL_BACKOFF_SECONDS = 1.0
+MAX_BACKOFF_SECONDS = 16.0
+RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
 
 COLUMNS = [
     "card",
@@ -67,6 +73,36 @@ def fetch_all_prints(query: str) -> List[dict]:
     return fetch_all_prints_since(query, None)
 
 
+def fetch_json_with_retries(url: str, headers: Dict[str, str]) -> dict:
+    attempt = 0
+    while True:
+        req = urllib.request.Request(url, headers=headers)
+        try:
+            with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT_SECONDS) as response:  # noqa: S310
+                return json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            retryable = exc.code in RETRYABLE_STATUS_CODES
+            detail = f"HTTP {exc.code}"
+        except urllib.error.URLError as exc:
+            retryable = True
+            detail = f"URL error: {exc.reason}"
+        except TimeoutError as exc:
+            retryable = True
+            detail = f"timeout: {exc}"
+
+        if retryable and attempt < MAX_RETRIES:
+            backoff_seconds = min(INITIAL_BACKOFF_SECONDS * (2**attempt), MAX_BACKOFF_SECONDS)
+            attempt += 1
+            print(
+                f"  ! transient Scryfall error ({detail}); retrying in {backoff_seconds:.1f}s "
+                f"({attempt}/{MAX_RETRIES})"
+            )
+            time.sleep(backoff_seconds)
+            continue
+
+        raise
+
+
 def fetch_all_prints_since(query: str, since_date: Optional[dt.date]) -> List[dict]:
     full_query = query
     if since_date is not None:
@@ -86,9 +122,7 @@ def fetch_all_prints_since(query: str, since_date: Optional[dt.date]) -> List[di
 
     cards: List[dict] = []
     while url:
-        req = urllib.request.Request(url, headers=headers)
-        with urllib.request.urlopen(req) as response:  # noqa: S310
-            payload = json.loads(response.read().decode("utf-8"))
+        payload = fetch_json_with_retries(url, headers)
 
         if payload.get("object") == "error":
             raise RuntimeError(f"Scryfall API error: {payload.get('details', 'unknown error')}")
