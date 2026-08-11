@@ -26,6 +26,8 @@ MAX_RETRIES = 5
 INITIAL_BACKOFF_SECONDS = 1.0
 MAX_BACKOFF_SECONDS = 16.0
 RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
+MIN_REQUEST_INTERVAL_SECONDS = 0.5
+_LAST_REQUEST_TS = 0.0
 
 COLUMNS = [
     "card",
@@ -73,11 +75,22 @@ def fetch_all_prints(query: str) -> List[dict]:
     return fetch_all_prints_since(query, None)
 
 
+def wait_for_rate_limit() -> None:
+    global _LAST_REQUEST_TS
+
+    now = time.monotonic()
+    elapsed = now - _LAST_REQUEST_TS
+    if elapsed < MIN_REQUEST_INTERVAL_SECONDS:
+        time.sleep(MIN_REQUEST_INTERVAL_SECONDS - elapsed)
+    _LAST_REQUEST_TS = time.monotonic()
+
+
 def fetch_json_with_retries(url: str, headers: Dict[str, str]) -> dict:
     attempt = 0
     while True:
         req = urllib.request.Request(url, headers=headers)
         try:
+            wait_for_rate_limit()
             with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT_SECONDS) as response:  # noqa: S310
                 return json.loads(response.read().decode("utf-8"))
         except urllib.error.HTTPError as exc:
@@ -130,7 +143,6 @@ def fetch_all_prints_since(query: str, since_date: Optional[dt.date]) -> List[di
         cards.extend(payload.get("data", []))
         if payload.get("has_more"):
             url = payload.get("next_page")
-            time.sleep(0.12)
         else:
             url = ""
 
