@@ -2,7 +2,7 @@
 
 Last updated @ 2026-08-09T17:43:30Z UTC
 
-## Spreadsheets for the MTG Basic Land collectors out there. Updates daily- seven minutes after the observatory at Greenwich crosses its darkest hour (00:07):
+## Spreadsheets for the MTG Basic Land collectors out there. Updates daily.
 
 ### All Paper Basics
 
