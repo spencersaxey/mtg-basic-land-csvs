@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import csv
 import datetime as dt
+import email.utils
 import json
 import re
 import sys
@@ -26,7 +27,8 @@ MAX_RETRIES = 5
 INITIAL_BACKOFF_SECONDS = 1.0
 MAX_BACKOFF_SECONDS = 16.0
 RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
-MIN_REQUEST_INTERVAL_SECONDS = 0.5
+# Keep a small cushion below Scryfall's 2 req/s recommendation.
+MIN_REQUEST_INTERVAL_SECONDS = 0.6
 _LAST_REQUEST_TS = 0.0
 
 COLUMNS = [
@@ -85,10 +87,30 @@ def wait_for_rate_limit() -> None:
     _LAST_REQUEST_TS = time.monotonic()
 
 
+def retry_after_seconds_from_headers(headers: Dict[str, str]) -> Optional[float]:
+    retry_after = headers.get("Retry-After")
+    if not retry_after:
+        return None
+
+    retry_after = retry_after.strip()
+    if retry_after.isdigit():
+        return max(float(retry_after), 0.0)
+
+    parsed_dt = email.utils.parsedate_to_datetime(retry_after)
+    if parsed_dt is None:
+        return None
+
+    if parsed_dt.tzinfo is None:
+        parsed_dt = parsed_dt.replace(tzinfo=dt.timezone.utc)
+    now = dt.datetime.now(dt.timezone.utc)
+    return max((parsed_dt - now).total_seconds(), 0.0)
+
+
 def fetch_json_with_retries(url: str, headers: Dict[str, str]) -> dict:
     attempt = 0
     while True:
         req = urllib.request.Request(url, headers=headers)
+        retry_after_seconds: Optional[float] = None
         try:
             wait_for_rate_limit()
             with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT_SECONDS) as response:  # noqa: S310
@@ -96,6 +118,8 @@ def fetch_json_with_retries(url: str, headers: Dict[str, str]) -> dict:
         except urllib.error.HTTPError as exc:
             retryable = exc.code in RETRYABLE_STATUS_CODES
             detail = f"HTTP {exc.code}"
+            if exc.code == 429:
+                retry_after_seconds = retry_after_seconds_from_headers(dict(exc.headers.items()))
         except urllib.error.URLError as exc:
             retryable = True
             detail = f"URL error: {exc.reason}"
@@ -105,6 +129,8 @@ def fetch_json_with_retries(url: str, headers: Dict[str, str]) -> dict:
 
         if retryable and attempt < MAX_RETRIES:
             backoff_seconds = min(INITIAL_BACKOFF_SECONDS * (2**attempt), MAX_BACKOFF_SECONDS)
+            if retry_after_seconds is not None:
+                backoff_seconds = max(backoff_seconds, retry_after_seconds)
             attempt += 1
             print(
                 f"  ! transient Scryfall error ({detail}); retrying in {backoff_seconds:.1f}s "

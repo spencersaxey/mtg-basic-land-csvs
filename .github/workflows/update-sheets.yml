@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: update-mtg-sheets
+  cancel-in-progress: false
+
 jobs:
   update-sheets:
     runs-on: ubuntu-latest
