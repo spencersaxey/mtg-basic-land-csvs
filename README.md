@@ -1,6 +1,6 @@
 # mtg-basic-land-csvs
 
-Last updated @ 2026-10-01T05:41:45Z UTC
+Last updated @ 2026-10-02T05:26:10Z UTC
 
 ## Spreadsheets for the MTG Basic Land collectors out there. Updates daily.
 
